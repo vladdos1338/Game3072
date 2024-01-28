@@ -1,5 +1,6 @@
 import pygame
 import random
+from colors_for_squares import squares_colors
 
 class Board:
     # создание поля
@@ -24,7 +25,7 @@ class Board:
                 # Значение квадрата
                 value = self.board[y][x]
                 # Цвет квадрата
-                color = (93,88,78)
+                color = squares_colors[value]
                 # Отрисовка квадрата
                 pygame.draw.rect(screen, (88,73,73), (x * self.cell_size + self.left,
                                                  y * self.cell_size + self.top,
@@ -38,23 +39,37 @@ class Board:
                     text_value = font.render(str(value), 1, (255, 255, 255))
                     screen.blit(text_value, (x * self.cell_size + self.left + 25, y * self.cell_size + self.top + 15))
 
-
     def move(self, direction):
         if direction == 'right':
-            pass
+            for y in self.board:
+                # ненулевые квадраты
+                good_value = [value_x for value_x in y if value_x != 0]
+                y[:] = [0] * (self.width - len(good_value)) + good_value
 
-    def get_cell(self, w, h):
-        cell_x = w * self.cell_size + self.left
-        cell_y = h * self.cell_size + self.top
-        return cell_x, cell_y
+                for i in range(self.width - 1, 0, -1):
+                    if y[i] == y[i - 1]:
+                        y[i] *= 2
+                        y[i - 1] = 0
 
+        elif direction == 'left':
+            for y in self.board:
+                good_value = [value for value in y if value != 0]
+                y[:] = good_value + [0] * (self.width - len(good_value))
 
-class Square():
-    def __init__(self, wx, hy, value, board):
-        self.value = value
-        x, y = board.get_cell(wx, hy)
-        self.rect = pygame.Rect(x, y, 80, 80)
-        self.wx = wx
-        self.hy = hy
+                for i in range(self.width - 1):
+                    if y[i] == y[i + 1]:
+                        y[i] *= 2
+                        y[i + 1] = 0
 
+        self.generate_square()
+
+    def generate_square(self):
+        empty_cells = []
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.board[y][x] == 0:
+                    empty_cells.append((y, x))
+        if empty_cells:
+            y, x = random.choice(empty_cells)
+            self.board[y][x] = random.choice([3, 6])
 
