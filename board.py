@@ -33,7 +33,10 @@ class Board:
                 # Значение квадрата
                 value = self.board[y][x]
                 # Цвет квадрата
-                color = squares_colors[value]
+                if value <= 3072:
+                    color = squares_colors[value]
+                else:
+                    color = (15, 0, 0)
                 # Отрисовка квадрата
                 pygame.draw.rect(screen, color, (x * self.cell_size + self.left + 3,
                                                  y * self.cell_size + self.top + 3,
@@ -109,6 +112,11 @@ class Board:
                 text_value = font.render(str(value), 1, (255, 255, 255))
                 screen.blit(text_value,
                             (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 22))
+        if len(str(value)) >= 5:
+            font = pygame.font.Font(None, 42 - len(str(value)) * 2)
+            text_value = font.render(str(value), 1, (255, 255, 255))
+            screen.blit(text_value,
+                        (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 22))
 
     def move(self, direction):
         if direction == 'left':
