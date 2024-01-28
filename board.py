@@ -12,6 +12,14 @@ class Board:
             self.left = 200
             self.top = 170
             self.cell_size = 80
+        elif self.width == 4 and self.height == 4:
+            self.left = 200
+            self.top = 170
+            self.cell_size = 100
+        elif self.width == 6 and self.height == 6:
+            self.left = 180
+            self.top = 150
+            self.cell_size = 73
 
     # настройка внешнего вида
     def set_view(self, left, top, cell_size):
@@ -35,26 +43,72 @@ class Board:
                                                  self.cell_size, self.cell_size), 2)
                 # Отрисовка значения квадрата
                 if value:
-                    if len(str(value)) == 1:
-                        font = pygame.font.Font(None, 70)
-                        text_value = font.render(str(value), 1, (255, 255, 255))
-                        screen.blit(text_value,
-                                    (x * self.cell_size + self.left + 26, y * self.cell_size + self.top + 15))
-                    elif len(str(value)) == 2:
-                        font = pygame.font.Font(None, 64)
-                        text_value = font.render(str(value), 1, (255, 255, 255))
-                        screen.blit(text_value,
-                                    (x * self.cell_size + self.left + 17, y * self.cell_size + self.top + 18))
-                    elif len(str(value)) == 3:
-                        font = pygame.font.Font(None, 58)
-                        text_value = font.render(str(value), 1, (255, 255, 255))
-                        screen.blit(text_value,
-                                    (x * self.cell_size + self.left + 6, y * self.cell_size + self.top + 20))
-                    elif len(str(value)) == 4:
-                        font = pygame.font.Font(None, 48)
-                        text_value = font.render(str(value), 1, (255, 255, 255))
-                        screen.blit(text_value,
-                                    (x * self.cell_size + self.left + 3, y * self.cell_size + self.top + 23))
+                    self.render_value(screen, value, x, y)
+
+    def render_value(self, screen, value, x, y):
+        if self.width == 5 and self.height == 5:
+            if len(str(value)) == 1:
+                font = pygame.font.Font(None, 70)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 26, y * self.cell_size + self.top + 15))
+            elif len(str(value)) == 2:
+                font = pygame.font.Font(None, 64)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 17, y * self.cell_size + self.top + 18))
+            elif len(str(value)) == 3:
+                font = pygame.font.Font(None, 58)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 6, y * self.cell_size + self.top + 20))
+            elif len(str(value)) == 4:
+                font = pygame.font.Font(None, 48)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 3, y * self.cell_size + self.top + 23))
+        elif self.width == 4 and self.height == 4:
+            if len(str(value)) == 1:
+                font = pygame.font.Font(None, 100)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 30, y * self.cell_size + self.top + 15))
+            elif len(str(value)) == 2:
+                font = pygame.font.Font(None, 86)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 16, y * self.cell_size + self.top + 19))
+            elif len(str(value)) == 3:
+                font = pygame.font.Font(None, 72)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 5, y * self.cell_size + self.top + 25))
+            elif len(str(value)) == 4:
+                font = pygame.font.Font(None, 54)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 5, y * self.cell_size + self.top + 30))
+        elif self.width == 6 and self.height == 6:
+            if len(str(value)) == 1:
+                font = pygame.font.Font(None, 70)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 23, y * self.cell_size + self.top + 13))
+            elif len(str(value)) == 2:
+                font = pygame.font.Font(None, 64)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 12, y * self.cell_size + self.top + 16))
+            elif len(str(value)) == 3:
+                font = pygame.font.Font(None, 58)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 19))
+            elif len(str(value)) == 4:
+                font = pygame.font.Font(None, 42)
+                text_value = font.render(str(value), 1, (255, 255, 255))
+                screen.blit(text_value,
+                            (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 22))
 
     def move(self, direction):
         if direction == 'left':
