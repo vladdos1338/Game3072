@@ -45,9 +45,9 @@ def start_screen():
                 if check_coords(event.pos):
                     return
         screen.fill((220, 220, 220))
-        screen.blit(text_tip, (140, 65))
+        screen.blit(text_tip, (140, 85))
         for i in range(3):
-            pygame.draw.rect(screen, (223,227,216), (121 + i * 200, 232, 150, 150))
+            pygame.draw.rect(screen, (223, 227, 216), (121 + i * 200, 232, 150, 150))
             pygame.draw.rect(screen, (88, 73, 73), (121 + i*200, 232, 150, 150), 5)
         screen.blit(board_4, (150, 280))
         screen.blit(board_5, (350, 280))

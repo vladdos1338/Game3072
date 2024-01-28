@@ -8,10 +8,10 @@ class Board:
         self.width = width
         self.height = height
         self.board = [[0] * width for _ in range(height)]
-        # значения по умолчанию
-        self.left = 200
-        self.top = 170
-        self.cell_size = 80
+        if self.width == 5 and self.height == 5:
+            self.left = 200
+            self.top = 170
+            self.cell_size = 80
 
     # настройка внешнего вида
     def set_view(self, left, top, cell_size):
@@ -27,12 +27,12 @@ class Board:
                 # Цвет квадрата
                 color = squares_colors[value]
                 # Отрисовка квадрата
+                pygame.draw.rect(screen, color, (x * self.cell_size + self.left + 3,
+                                                 y * self.cell_size + self.top + 3,
+                                                 self.cell_size - 3, self.cell_size - 3))
                 pygame.draw.rect(screen, (88,73,73), (x * self.cell_size + self.left,
                                                  y * self.cell_size + self.top,
                                                  self.cell_size, self.cell_size), 2)
-                pygame.draw.rect(screen, color, (x * self.cell_size + self.left + 3,
-                                                                    y * self.cell_size + self.top + 3,
-                                                                    self.cell_size - 3, self.cell_size - 3))
                 # Отрисовка значения квадрата
                 if value:
                     if len(str(value)) == 1:
