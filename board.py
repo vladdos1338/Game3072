@@ -169,6 +169,11 @@ class Board:
 
         self.generate_square()
 
+    def check_win(self):
+        for row in self.board:
+            if 3072 in row:
+                return True
+
     def generate_square(self):
         empty_cells = []
         for x in range(self.width):
@@ -177,5 +182,5 @@ class Board:
                     empty_cells.append((y, x))
         if empty_cells:
             y, x = random.choice(empty_cells)
-            self.board[y][x] = random.choice([3, 6])
+            self.board[y][x] = random.choice([3, 6, 1536])
 

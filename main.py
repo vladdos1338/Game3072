@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 from board import Board
 
 pygame.init()
@@ -11,23 +12,71 @@ fps = 60
 # текстовая информация
 font = pygame.font.Font(None, 72)
 title = font.render('3072', 1, (18, 30, 19))
+is_continue = 0
 
 def terminate():
     pygame.quit()
     sys.exit()
 
-def check_coords(pos):
+def win_screen():
+    global is_continue
+    font = pygame.font.Font(None, 80)
+    text_congratulations = font.render('Вы победили!', 1, (255, 0, 0))
+    btn_restart = pygame.transform.scale(load_image("restart.png"), (120, 120))
+    btn_continue = pygame.transform.scale(load_image("continue.png"), (120, 120))
+    choosing = True
+    while choosing:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if check_coords('win', event.pos) == 'restart':
+                    start_screen()
+                    return
+                elif check_coords('win', event.pos) == 'continue':
+                    is_continue = 1
+                    return
+        screen.blit(text_congratulations, (200, 85))
+        screen.blit(btn_restart, (230, 300))
+        screen.blit(btn_continue, (430, 300))
+        pygame.display.flip()
+        clock.tick(60)
+
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    # если файл не существует, то выходим
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+def check_coords(who, pos):
     global board
-    if 271 > pos[0] > 121 and 382 > pos[1] > 232:
-        board = Board(4, 4)
-        return True
-    elif 471 > pos[0] > 321 and 382 > pos[1] > 232:
-        board = Board(5, 5)
-        return True
-    elif 671 > pos[0] > 521 and 382 > pos[1] > 232:
-        board = Board(6, 6)
-        return True
-    return False
+    if who == 'start':
+        if 271 > pos[0] > 121 and 382 > pos[1] > 232:
+            board = Board(4, 4)
+            return True
+        elif 471 > pos[0] > 321 and 382 > pos[1] > 232:
+            board = Board(5, 5)
+            return True
+        elif 671 > pos[0] > 521 and 382 > pos[1] > 232:
+            board = Board(6, 6)
+            return True
+        return False
+    elif who == 'win':
+        if 350 > pos[0] > 230 and 420 > pos[1] > 300:
+            return 'restart'
+        elif 550 > pos[0] > 430 and 420 > pos[1] > 300:
+            return 'continue'
+        return False
 
 def start_screen():
     font = pygame.font.Font(None, 80)
@@ -42,7 +91,7 @@ def start_screen():
             if event.type == pygame.QUIT:
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if check_coords(event.pos):
+                if check_coords('start', event.pos):
                     return
         screen.fill((220, 220, 220))
         screen.blit(text_tip, (140, 85))
@@ -71,6 +120,8 @@ while running:
                 board.move('up')
             elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 board.move('down')
+            if board.check_win() and is_continue == 0:
+                win_screen()
     screen.fill((220, 220, 220))
     board.render(screen)
     screen.blit(title, (340, 70))
