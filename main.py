@@ -77,6 +77,28 @@ def check_coords(who, pos):
         elif 550 > pos[0] > 430 and 420 > pos[1] > 300:
             return 'continue'
         return False
+    elif who == 'lose':
+        if 600 > pos[0] > 300 and 600 > pos[1] > 300:
+            return 'restart'
+        return False
+
+def lose_screen():
+    font = pygame.font.Font(None, 80)
+    text_lose = font.render('Вы проиграли!', 1, (255, 0, 0))
+    btn_restart = pygame.transform.scale(load_image("restart.png"), (200, 200))
+    choosing = True
+    while choosing:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if check_coords('lose', event.pos) == 'restart':
+                    start_screen()
+                    return
+        screen.blit(text_lose, (200, 85))
+        screen.blit(btn_restart, (300, 300))
+        pygame.display.flip()
+        clock.tick(60)
 
 def start_screen():
     font = pygame.font.Font(None, 80)
@@ -107,6 +129,7 @@ def start_screen():
 start_screen()
 board.generate_square()
 running = True
+w = 0
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -121,10 +144,15 @@ while running:
             elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 board.move('down')
             if board.check_win() and is_continue == 0:
-                win_screen()
+                w = 1
     screen.fill((220, 220, 220))
     board.render(screen)
     screen.blit(title, (340, 70))
+    if w:
+        w = 0
+        win_screen()
+    if board.is_lose():
+        lose_screen()
     pygame.display.flip()
     clock.tick(fps)
 pygame.quit()

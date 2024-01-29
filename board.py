@@ -1,6 +1,8 @@
 import pygame
 import random
 from colors_for_squares import squares_colors
+from move import move_board
+import copy
 
 class Board:
     # создание поля
@@ -8,6 +10,7 @@ class Board:
         self.width = width
         self.height = height
         self.board = [[0] * width for _ in range(height)]
+        self.lose = 0
         if self.width == 5 and self.height == 5:
             self.left = 200
             self.top = 170
@@ -26,6 +29,9 @@ class Board:
         self.left = left
         self.top = top
         self.cell_size = cell_size
+
+    def get_board(self):
+        return self.board
 
     def render(self, screen):
         for y in range(self.height):
@@ -145,7 +151,7 @@ class Board:
                         self.board[y].pop(x-1)
                         self.board[y].insert(0, 0)
 
-        if direction == 'up':
+        elif direction == 'up':
             for x in range(self.width):
                 column = [self.board[y][x] for y in range(self.height)]
                 while 0 in column:
@@ -190,5 +196,23 @@ class Board:
                     empty_cells.append((y, x))
         if empty_cells:
             y, x = random.choice(empty_cells)
-            self.board[y][x] = random.choice([3, 6, 1536])
+            self.board[y][x] = random.choice([3, 6])
+            self.check_moves()
 
+    def check_moves(self):
+        test_board = copy.deepcopy(self.board)
+        test_board = move_board(test_board, self.height, self.width, 'left')
+        if test_board == self.board:
+            test_board = move_board(test_board, self.height, self.width, 'up')
+            if test_board == self.board:
+                test_board = move_board(test_board, self.height, self.width, 'down')
+                if test_board == self.board:
+                    test_board = move_board(test_board, self.height, self.width, 'right')
+                    if test_board == self.board:
+                        self.lose = 1
+
+    def is_lose(self):
+        if self.lose:
+            self.lose = 0
+            return True
+        return False
