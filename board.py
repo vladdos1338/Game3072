@@ -23,6 +23,8 @@ class Board:
             self.left = 180
             self.top = 150
             self.cell_size = 73
+        self.generate_square()
+        self.generate_square()
 
     # настройка внешнего вида
     def set_view(self, left, top, cell_size):
@@ -119,7 +121,7 @@ class Board:
                 screen.blit(text_value,
                             (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 22))
         if len(str(value)) >= 5:
-            font = pygame.font.Font(None, 42 - len(str(value)) * 2)
+            font = pygame.font.Font(None, 54 - len(str(value)) * 2)
             text_value = font.render(str(value), 1, (255, 255, 255))
             screen.blit(text_value,
                         (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 22))

@@ -36,7 +36,7 @@ def win_screen():
                 elif check_coords('win', event.pos) == 'continue':
                     is_continue = 1
                     return
-        screen.blit(text_congratulations, (200, 85))
+        screen.blit(text_congratulations, (200, 110))
         screen.blit(btn_restart, (230, 300))
         screen.blit(btn_continue, (430, 300))
         pygame.display.flip()
@@ -81,8 +81,13 @@ def check_coords(who, pos):
         if 600 > pos[0] > 300 and 600 > pos[1] > 300:
             return 'restart'
         return False
+    elif who == 'game':
+        if 770 > pos[0] > 710 and 80 > pos[1] > 20:
+            return 'menu'
+        return False
 
 def lose_screen():
+    global is_continue
     font = pygame.font.Font(None, 80)
     text_lose = font.render('Вы проиграли!', 1, (255, 0, 0))
     btn_restart = pygame.transform.scale(load_image("restart.png"), (200, 200))
@@ -93,9 +98,10 @@ def lose_screen():
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if check_coords('lose', event.pos) == 'restart':
+                    is_continue = 0
                     start_screen()
                     return
-        screen.blit(text_lose, (200, 85))
+        screen.blit(text_lose, (200, 105))
         screen.blit(btn_restart, (300, 300))
         pygame.display.flip()
         clock.tick(60)
@@ -126,10 +132,14 @@ def start_screen():
         pygame.display.flip()
         clock.tick(60)
 
+# Кнопка меню
+btn_menu = pygame.transform.scale(load_image("menu.png"), (60, 60))
+# Запуск начального экрана
 start_screen()
-board.generate_square()
-running = True
+# Флаг победы
 w = 0
+# Игровой цикл
+running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -145,9 +155,13 @@ while running:
                 board.move('down')
             if board.check_win() and is_continue == 0:
                 w = 1
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if check_coords('game', event.pos) == 'menu':
+                start_screen()
     screen.fill((220, 220, 220))
     board.render(screen)
     screen.blit(title, (340, 70))
+    screen.blit(btn_menu, (710, 20))
     if w:
         w = 0
         win_screen()
