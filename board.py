@@ -27,13 +27,8 @@ class Board:
         self.generate_square()
 
     # настройка внешнего вида
-    def set_view(self, left, top, cell_size):
-        self.left = left
-        self.top = top
-        self.cell_size = cell_size
-
-    def get_board(self):
-        return self.board
+    def get_size(self):
+        return self.height, self.width
 
     def render(self, screen):
         for y in range(self.height):

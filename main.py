@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import sqlite3
 from board import Board
 
 pygame.init()
@@ -9,12 +10,17 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption('3072 GAME')
 clock = pygame.time.Clock()
 fps = 60
+# Подключение бд
+con_scores = sqlite3.connect(os.path.join('data\db', 'scores_db.sqlite'))
+cur = con_scores.cursor()
 # текстовая информация
 font = pygame.font.Font(None, 72)
 title = font.render('3072', 1, (18, 30, 19))
+font1 = pygame.font.Font(None, 50)
 is_continue = 0
 
 def terminate():
+    con_scores.close()
     pygame.quit()
     sys.exit()
 
@@ -88,6 +94,14 @@ def check_coords(who, pos):
 
 def lose_screen():
     global is_continue
+    # сохранение счета в бд
+    if board.get_size() == (4, 4):
+        cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
+    elif board.get_size() == (5, 5):
+        cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
+    elif board.get_size() == (6, 6):
+        cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
+    con_scores.commit()
     font = pygame.font.Font(None, 80)
     text_lose = font.render('Вы проиграли!', 1, (255, 0, 0))
     btn_restart = pygame.transform.scale(load_image("restart.png"), (200, 200))
@@ -107,6 +121,7 @@ def lose_screen():
         clock.tick(60)
 
 def start_screen():
+    global best_score, best_score_text
     font = pygame.font.Font(None, 80)
     choosing = True
     board_4 = font.render('4x4', 1, (0, 0, 0))
@@ -120,6 +135,13 @@ def start_screen():
                 terminate()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if check_coords('start', event.pos):
+                    if board.get_size() == (4, 4):
+                        best_score = cur.execute("SELECT MAX(score) FROM scores_4x4").fetchall()[0][0]
+                    elif board.get_size() == (5, 5):
+                        best_score = cur.execute("SELECT MAX(score) FROM scores_5x5").fetchall()[0][0]
+                    elif board.get_size() == (6, 6):
+                        best_score = cur.execute("SELECT MAX(score) FROM scores_6x6").fetchall()[0][0]
+                    best_score_text = font1.render(f"Рекорд: {best_score}", 1, (0, 0, 0))
                     return
         screen.fill((220, 220, 220))
         screen.blit(text_tip, (140, 85))
@@ -136,7 +158,6 @@ def start_screen():
 btn_menu = pygame.transform.scale(load_image("menu.png"), (60, 60))
 # Запуск начального экрана
 start_screen()
-font1 = pygame.font.Font(None, 50)
 # Флаг победы
 w = 0
 # Игровой цикл
@@ -159,12 +180,20 @@ while running:
                 w = 1
         if event.type == pygame.MOUSEBUTTONDOWN:
             if check_coords('game', event.pos) == 'menu':
+                if board.get_size() == (4, 4):
+                    cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
+                elif board.get_size() == (5, 5):
+                    cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
+                elif board.get_size() == (6, 6):
+                    cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
+                con_scores.commit()
                 start_screen()
     screen.fill((220, 220, 220))
     board.render(screen)
     screen.blit(title, (340, 70))
     screen.blit(btn_menu, (710, 20))
     screen.blit(current_score_text, (15, 15))
+    screen.blit(best_score_text, (15, 50))
     if w:
         w = 0
         win_screen()
@@ -172,4 +201,5 @@ while running:
         lose_screen()
     pygame.display.flip()
     clock.tick(fps)
+con_scores.close()
 pygame.quit()
