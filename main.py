@@ -13,6 +13,8 @@ fps = 60
 # Подключение бд
 con_scores = sqlite3.connect(os.path.join('data\db', 'scores_db.sqlite'))
 cur = con_scores.cursor()
+con_save = sqlite3.connect(os.path.join('data\db', 'save_game_db.sqlite'))
+cur2 = con_save.cursor()
 # текстовая информация
 font = pygame.font.Font(None, 72)
 title = font.render('3072', 1, (18, 30, 19))
@@ -20,6 +22,7 @@ font1 = pygame.font.Font(None, 50)
 is_continue = 0
 
 def terminate():
+    con_save.close()
     con_scores.close()
     pygame.quit()
     sys.exit()
@@ -97,10 +100,13 @@ def lose_screen():
     # сохранение счета в бд
     if board.get_size() == (4, 4):
         cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
+        cur2.execute("DELETE FROM saves_4x4")
     elif board.get_size() == (5, 5):
         cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
+        cur2.execute("DELETE FROM saves_5x5")
     elif board.get_size() == (6, 6):
         cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
+        cur2.execute("DELETE FROM saves_6x6")
     con_scores.commit()
     font = pygame.font.Font(None, 80)
     text_lose = font.render('Вы проиграли!', 1, (255, 0, 0))
@@ -137,10 +143,19 @@ def start_screen():
                 if check_coords('start', event.pos):
                     if board.get_size() == (4, 4):
                         best_score = cur.execute("SELECT MAX(score) FROM scores_4x4").fetchall()[0][0]
+                        if cur2.execute("SELECT COUNT(*) FROM saves_4x4 WHERE positions IS NOT NULL;").fetchall()[0][0]:
+                            loaded_board = cur2.execute("SELECT * FROM saves_4x4 ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
+                            board.load_board(loaded_board)
                     elif board.get_size() == (5, 5):
                         best_score = cur.execute("SELECT MAX(score) FROM scores_5x5").fetchall()[0][0]
+                        if cur2.execute("SELECT COUNT(*) FROM saves_5x5 WHERE positions IS NOT NULL;").fetchall()[0][0]:
+                            loaded_board = cur2.execute("SELECT * FROM saves_5x5 ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
+                            board.load_board(loaded_board)
                     elif board.get_size() == (6, 6):
                         best_score = cur.execute("SELECT MAX(score) FROM scores_6x6").fetchall()[0][0]
+                        if cur2.execute("SELECT COUNT(*) FROM saves_6x6 WHERE positions IS NOT NULL;").fetchall()[0][0]:
+                            loaded_board = cur2.execute("SELECT * FROM saves_6x6 ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
+                            board.load_board(loaded_board)
                     best_score_text = font1.render(f"Рекорд: {best_score}", 1, (0, 0, 0))
                     return
         screen.fill((220, 220, 220))
@@ -166,6 +181,9 @@ while running:
     current_score_text = font1.render(f"Очки: {board.get_current_score()}", 1, (0, 0, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            cur2.execute("DELETE FROM saves_4x4")
+            cur2.execute("INSERT INTO saves_4x4 (positions) VALUES (?)", (str(board.get_board()),))
+            con_save.commit()
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
@@ -182,11 +200,18 @@ while running:
             if check_coords('game', event.pos) == 'menu':
                 if board.get_size() == (4, 4):
                     cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
+                    cur2.execute("DELETE FROM saves_4x4")
+                    cur2.execute("INSERT INTO saves_4x4 (positions) VALUES (?)", (str(board.get_board()),))
                 elif board.get_size() == (5, 5):
                     cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
+                    cur2.execute("DELETE FROM saves_5x5")
+                    cur2.execute("INSERT INTO saves_5x5 (positions) VALUES (?)", (str(board.get_board()),))
                 elif board.get_size() == (6, 6):
                     cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
+                    cur2.execute("DELETE FROM saves_6x6")
+                    cur2.execute("INSERT INTO saves_6x6 (positions) VALUES (?)", (str(board.get_board()),))
                 con_scores.commit()
+                con_save.commit()
                 start_screen()
     screen.fill((220, 220, 220))
     board.render(screen)
@@ -202,4 +227,5 @@ while running:
     pygame.display.flip()
     clock.tick(fps)
 con_scores.close()
+con_save.close()
 pygame.quit()

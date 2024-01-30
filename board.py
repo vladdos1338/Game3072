@@ -30,6 +30,12 @@ class Board:
     def get_size(self):
         return self.height, self.width
 
+    def get_board(self):
+        return self.board
+
+    def load_board(self, board):
+        self.board = eval(board)
+
     def render(self, screen):
         for y in range(self.height):
             for x in range(self.width):
