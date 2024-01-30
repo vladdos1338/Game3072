@@ -43,7 +43,7 @@ def win_screen():
         clock.tick(60)
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
+    fullname = os.path.join('data\images', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
@@ -136,11 +136,13 @@ def start_screen():
 btn_menu = pygame.transform.scale(load_image("menu.png"), (60, 60))
 # Запуск начального экрана
 start_screen()
+font1 = pygame.font.Font(None, 50)
 # Флаг победы
 w = 0
 # Игровой цикл
 running = True
 while running:
+    current_score_text = font1.render(f"Очки: {board.get_current_score()}", 1, (0, 0, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -162,6 +164,7 @@ while running:
     board.render(screen)
     screen.blit(title, (340, 70))
     screen.blit(btn_menu, (710, 20))
+    screen.blit(current_score_text, (15, 15))
     if w:
         w = 0
         win_screen()

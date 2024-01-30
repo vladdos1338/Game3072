@@ -218,3 +218,9 @@ class Board:
             self.lose = 0
             return True
         return False
+
+    def get_current_score(self):
+        sum_x = []
+        for y in self.board:
+            sum_x.append(sum(y))
+        return sum(sum_x)
