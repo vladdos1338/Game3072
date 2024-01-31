@@ -21,11 +21,13 @@ title = font.render('3072', 1, (18, 30, 19))
 font1 = pygame.font.Font(None, 50)
 is_continue = 0
 
+
 def terminate():
     con_save.close()
     con_scores.close()
     pygame.quit()
     sys.exit()
+
 
 def win_screen():
     global is_continue
@@ -51,6 +53,7 @@ def win_screen():
         pygame.display.flip()
         clock.tick(60)
 
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data\images', name)
     # если файл не существует, то выходим
@@ -66,6 +69,7 @@ def load_image(name, colorkey=None):
     else:
         image = image.convert_alpha()
     return image
+
 
 def check_coords(who, pos):
     global board
@@ -93,20 +97,45 @@ def check_coords(who, pos):
     elif who == 'game':
         if 770 > pos[0] > 710 and 80 > pos[1] > 20:
             return 'menu'
+        elif 690 > pos[0] > 630 and 80 > pos[1] > 20:
+            return 'restart'
         return False
+
+
+def db_save_delete(flag):
+    if flag == 'lose':
+        if board.get_size() == (4, 4):
+            cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
+            cur2.execute("DELETE FROM saves_4x4")
+        elif board.get_size() == (5, 5):
+            cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
+            cur2.execute("DELETE FROM saves_5x5")
+        elif board.get_size() == (6, 6):
+            cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
+            cur2.execute("DELETE FROM saves_6x6")
+    elif flag == 'restart':
+        if board.get_size() == (4, 4):
+            cur2.execute("DELETE FROM saves_4x4")
+        elif board.get_size() == (5, 5):
+            cur2.execute("DELETE FROM saves_5x5")
+        elif board.get_size() == (6, 6):
+            cur2.execute("DELETE FROM saves_6x6")
+    elif flag == 'menu':
+        if board.get_size() == (4, 4):
+            cur2.execute("DELETE FROM saves_4x4")
+            cur2.execute("INSERT INTO saves_4x4 (positions) VALUES (?)", (str(board.get_board()),))
+        elif board.get_size() == (5, 5):
+            cur2.execute("DELETE FROM saves_5x5")
+            cur2.execute("INSERT INTO saves_5x5 (positions) VALUES (?)", (str(board.get_board()),))
+        elif board.get_size() == (6, 6):
+            cur2.execute("DELETE FROM saves_6x6")
+            cur2.execute("INSERT INTO saves_6x6 (positions) VALUES (?)", (str(board.get_board()),))
+
 
 def lose_screen():
     global is_continue
     # сохранение счета в бд
-    if board.get_size() == (4, 4):
-        cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
-        cur2.execute("DELETE FROM saves_4x4")
-    elif board.get_size() == (5, 5):
-        cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
-        cur2.execute("DELETE FROM saves_5x5")
-    elif board.get_size() == (6, 6):
-        cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
-        cur2.execute("DELETE FROM saves_6x6")
+    db_save_delete('lose')
     con_scores.commit()
     font = pygame.font.Font(None, 80)
     text_lose = font.render('Вы проиграли!', 1, (255, 0, 0))
@@ -126,6 +155,7 @@ def lose_screen():
         pygame.display.flip()
         clock.tick(60)
 
+
 def start_screen():
     global best_score, best_score_text
     font = pygame.font.Font(None, 80)
@@ -144,17 +174,20 @@ def start_screen():
                     if board.get_size() == (4, 4):
                         best_score = cur.execute("SELECT MAX(score) FROM scores_4x4").fetchall()[0][0]
                         if cur2.execute("SELECT COUNT(*) FROM saves_4x4 WHERE positions IS NOT NULL;").fetchall()[0][0]:
-                            loaded_board = cur2.execute("SELECT * FROM saves_4x4 ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
+                            loaded_board = cur2.execute("SELECT * FROM saves_4x4 "
+                                                        "ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
                             board.load_board(loaded_board)
                     elif board.get_size() == (5, 5):
                         best_score = cur.execute("SELECT MAX(score) FROM scores_5x5").fetchall()[0][0]
                         if cur2.execute("SELECT COUNT(*) FROM saves_5x5 WHERE positions IS NOT NULL;").fetchall()[0][0]:
-                            loaded_board = cur2.execute("SELECT * FROM saves_5x5 ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
+                            loaded_board = cur2.execute("SELECT * FROM saves_5x5 "
+                                                        "ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
                             board.load_board(loaded_board)
                     elif board.get_size() == (6, 6):
                         best_score = cur.execute("SELECT MAX(score) FROM scores_6x6").fetchall()[0][0]
                         if cur2.execute("SELECT COUNT(*) FROM saves_6x6 WHERE positions IS NOT NULL;").fetchall()[0][0]:
-                            loaded_board = cur2.execute("SELECT * FROM saves_6x6 ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
+                            loaded_board = cur2.execute("SELECT * FROM saves_6x6 "
+                                                        "ORDER BY positions DESC LIMIT 1").fetchall()[0][0]
                             board.load_board(loaded_board)
                     best_score_text = font1.render(f"Рекорд: {best_score}", 1, (0, 0, 0))
                     return
@@ -169,8 +202,10 @@ def start_screen():
         pygame.display.flip()
         clock.tick(60)
 
+
 # Кнопка меню
 btn_menu = pygame.transform.scale(load_image("menu.png"), (60, 60))
+btn_restart = pygame.transform.scale(load_image("restart.png"), (60, 60))
 # Запуск начального экрана
 start_screen()
 # Флаг победы
@@ -194,31 +229,32 @@ while running:
                 board.move('up')
             elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 board.move('down')
+            # Если на поле есть квадрат 3072 и пользователь до этого не нажимал 'продолжить', то флаг победы равен 1
             if board.check_win() and is_continue == 0:
                 w = 1
         if event.type == pygame.MOUSEBUTTONDOWN:
             if check_coords('game', event.pos) == 'menu':
-                if board.get_size() == (4, 4):
-                    cur.execute("INSERT INTO scores_4x4 (score) VALUES (?)", (board.get_current_score(),))
-                    cur2.execute("DELETE FROM saves_4x4")
-                    cur2.execute("INSERT INTO saves_4x4 (positions) VALUES (?)", (str(board.get_board()),))
-                elif board.get_size() == (5, 5):
-                    cur.execute("INSERT INTO scores_5x5 (score) VALUES (?)", (board.get_current_score(),))
-                    cur2.execute("DELETE FROM saves_5x5")
-                    cur2.execute("INSERT INTO saves_5x5 (positions) VALUES (?)", (str(board.get_board()),))
-                elif board.get_size() == (6, 6):
-                    cur.execute("INSERT INTO scores_6x6 (score) VALUES (?)", (board.get_current_score(),))
-                    cur2.execute("DELETE FROM saves_6x6")
-                    cur2.execute("INSERT INTO saves_6x6 (positions) VALUES (?)", (str(board.get_board()),))
+                db_save_delete('menu')
                 con_scores.commit()
                 con_save.commit()
                 start_screen()
+            if check_coords('game', event.pos) == 'restart':
+                db_save_delete('restart')
+                size = board.get_size()
+                board = Board(*size)
     screen.fill((220, 220, 220))
     board.render(screen)
+    # Отрисовка заголовка игры
     screen.blit(title, (340, 70))
+    # Отрисовка кнопки меню
     screen.blit(btn_menu, (710, 20))
+    # Отрисовка кнопки старта
+    screen.blit(btn_restart, (630, 20))
+    # Отрисовка текущего счета
     screen.blit(current_score_text, (15, 15))
+    # Отрисовка лучшего счета
     screen.blit(best_score_text, (15, 50))
+    # Проверка победы и проигрыша
     if w:
         w = 0
         win_screen()
@@ -226,6 +262,7 @@ while running:
         lose_screen()
     pygame.display.flip()
     clock.tick(fps)
+
 con_scores.close()
 con_save.close()
 pygame.quit()

@@ -4,6 +4,7 @@ from colors_for_squares import squares_colors
 from move import move_board
 import copy
 
+
 class Board:
     # создание поля
     def __init__(self, width, height):
@@ -26,13 +27,15 @@ class Board:
         self.generate_square()
         self.generate_square()
 
-    # настройка внешнего вида
+    # Получить размеры поля
     def get_size(self):
         return self.height, self.width
 
+    # Вернуть поле в виде матрицы
     def get_board(self):
         return self.board
 
+    # Загрузить матрицу
     def load_board(self, board):
         self.board = eval(board)
 
@@ -50,7 +53,7 @@ class Board:
                 pygame.draw.rect(screen, color, (x * self.cell_size + self.left + 3,
                                                  y * self.cell_size + self.top + 3,
                                                  self.cell_size - 3, self.cell_size - 3))
-                pygame.draw.rect(screen, (88,73,73), (x * self.cell_size + self.left,
+                pygame.draw.rect(screen, (88, 73, 73), (x * self.cell_size + self.left,
                                                  y * self.cell_size + self.top,
                                                  self.cell_size, self.cell_size), 2)
                 # Отрисовка значения квадрата
@@ -58,6 +61,7 @@ class Board:
                     self.render_value(screen, value, x, y)
 
     def render_value(self, screen, value, x, y):
+        # Отрисовка значения квадрата в поле 5 на 5
         if self.width == 5 and self.height == 5:
             if len(str(value)) == 1:
                 font = pygame.font.Font(None, 70)
@@ -79,6 +83,7 @@ class Board:
                 text_value = font.render(str(value), 1, (255, 255, 255))
                 screen.blit(text_value,
                             (x * self.cell_size + self.left + 3, y * self.cell_size + self.top + 23))
+        # Отрисовка значения квадрата в поле 4 на 4
         elif self.width == 4 and self.height == 4:
             if len(str(value)) == 1:
                 font = pygame.font.Font(None, 100)
@@ -100,6 +105,7 @@ class Board:
                 text_value = font.render(str(value), 1, (255, 255, 255))
                 screen.blit(text_value,
                             (x * self.cell_size + self.left + 5, y * self.cell_size + self.top + 30))
+        # Отрисовка значения квадрата в поле 6 на 6
         elif self.width == 6 and self.height == 6:
             if len(str(value)) == 1:
                 font = pygame.font.Font(None, 70)
@@ -121,6 +127,7 @@ class Board:
                 text_value = font.render(str(value), 1, (255, 255, 255))
                 screen.blit(text_value,
                             (x * self.cell_size + self.left + 2, y * self.cell_size + self.top + 22))
+        # Если число будет больше 3072, то его размер в ячейке будет вычислен по такой формуле
         if len(str(value)) >= 5:
             font = pygame.font.Font(None, 54 - len(str(value)) * 2)
             text_value = font.render(str(value), 1, (255, 255, 255))
@@ -186,11 +193,13 @@ class Board:
 
         self.generate_square()
 
+    # Проверка на победу
     def check_win(self):
         for row in self.board:
             if 3072 in row:
                 return True
 
+    # Генерация случайного квадрата на пустой ячейке
     def generate_square(self):
         empty_cells = []
         for x in range(self.width):
@@ -202,8 +211,11 @@ class Board:
             self.board[y][x] = random.choice([3, 6])
             self.check_moves()
 
+    # Проверка на возможность хода
     def check_moves(self):
+        # Создаем копию матрицы, чтобы изменения не происходили в основном поле
         test_board = copy.deepcopy(self.board)
+        # Если после движения по всем направлениям копия поля равна оригиналу, значит ходов не осталось
         test_board = move_board(test_board, self.height, self.width, 'left')
         if test_board == self.board:
             test_board = move_board(test_board, self.height, self.width, 'up')
@@ -212,8 +224,10 @@ class Board:
                 if test_board == self.board:
                     test_board = move_board(test_board, self.height, self.width, 'right')
                     if test_board == self.board:
+                        # Если ходов нет проигрыш равен 1
                         self.lose = 1
 
+    # Проверка на проигрыш
     def is_lose(self):
         if self.lose:
             self.lose = 0
@@ -221,6 +235,7 @@ class Board:
         return False
 
     def get_current_score(self):
+        # Находим сначала суммы всех рядов, потом сумму сумм всех рядов, тем самым находим текущий счет
         sum_x = []
         for y in self.board:
             sum_x.append(sum(y))
